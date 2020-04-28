@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,7 @@ public class ProductoServiceImpl implements ProductoService {
     private ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public Long store(ProductoDTO productoDTO) {
         Producto producto = modelMapper.map(productoDTO,Producto.class);
         producto.setStock(0D);
@@ -41,6 +43,9 @@ public class ProductoServiceImpl implements ProductoService {
         Imagen imagen = modelMapper.map(productoDTO.getImagen(),Imagen.class);
 
         imagenRepository.save(imagen);
+        if(imagen.getDataBase64().length() > 100){
+            throw new BusinessException("No es posible guardar una imagen grande");
+        }
         producto.setImagen(imagen);
         productoRepository.save(producto);
 
